@@ -17,7 +17,7 @@
 	$show_table_query = "show tables";
 
 	function showTables($table) {
-		print "<select name='tables' class='form-select'>";
+		print "<select name='tables' class='form-control' style='width:40%'>";
 	        print "<option value=\"\">Choose...</option>";
 			while ($row = mysqli_fetch_row($table)) {
 				foreach ($row as $column) print "<option value=\"$column\">$column</option>";
@@ -37,7 +37,8 @@
         CloseCon($conn);
 
     ?>
-	<button type="submit">Show Table data</button>
+	
+		<button style="margin:20px;" type="submit" name="submit" class="btn btn-primary">Show Table data</button>
   </form>
 </div>
 <script src="./js/jquery.min.js"></script>

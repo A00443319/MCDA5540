@@ -30,23 +30,28 @@
 			if (!$doesExist) print("ERROR: ".mysqli_error($conn));
 			
 			if (mysqli_num_rows($doesExist) != 0){
+				#existing customer
 				echo '<script type="text/javascript">
-					if (window.confirm("Customer with same name already exists! Is this a new customer? ")) {
-							'.insertCustomer($fname,$lname,$addr,$phone,$conn).'
+					btnPressed = window.confirm("Customer with same name already exists! Is this a new customer? "); 
+						if (btnPressed == true) {
+							'.insertCustomer($fname,$lname,$addr,$phone,$conn).';
+						} else {
+							alert("Customer not added");
 						}
 				</script>';
 			} else {
+				#new customer
 				insertCustomer($fname,$lname,$addr,$phone,$conn);
 			}
 		}
 		
 		function insertCustomer($fname,$lname,$addr,$phone,$conn) {
-				$insert_cust_query = "INSERT into CUSTOMER (fname,lname,mailing_address,telephone) VALUES ('$fname','$lname','$addr','$phone')";
+				$insert_cust_query = "INSERT into CUSTOMER (fname,lname,mailing_address,telephone,discount_code) VALUES ('$fname','$lname','$addr','$phone',0)";
 				
 				$result = mysqli_query($conn,$insert_cust_query);
 				if (!$result) print("Error: ".mysqli_error($conn));
 				else{ 
-						echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">
+						echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
 									Customer Added!
 									<button type="button" class="close" data-dismiss="alert" aria-label="Close">
 										<span aria-hidden="true">&times;</span>
