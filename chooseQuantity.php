@@ -64,6 +64,16 @@
 		}
 		
 		
+		function readDiscountCode($conn,$cus_number) {
+			$DC = 0;
+			$DC_query = "select discount_code from CUSTOMER where c_id = '{$cus_number}';";
+			$DC_result = mysqli_query($conn, $DC_query);
+			if (!$DC_result) print("ERROR: ".mysqli_error($conn));	
+			$cust_row = mysqli_fetch_row($DC_result);
+			return $cust_row[0];
+			
+		}
+		
 		// isset Check whether a variable is empty.
 	if(isset($_POST['submit2']) ) {
 		#total during insert
@@ -80,18 +90,17 @@
 			$sum += ((int)$_POST['qty_'.$item] * $item_row[0]);
 		}
 		
-		#get discount code
-		$discount_code = getCurrentDiscountCode($conn,$c_no);
-
+		
+		#get current discount code
+		$discount_code = readDiscountCode($conn,$c_no);
+		
 		/*
 		
 			curr_totail = get sum(total price) from txn where cid=?  - D
 			figure out DC - D
 			calculate the new total price and insert in  transaction table - D
 			insert txn items - D
-			update discoutn code to customer table - D
-			
-			
+			update discoutn code to customer table
 		
 		*/
 		
@@ -115,8 +124,11 @@
 			}
 		}
 		
+		#calculate new discount code
+		$d_code = getCurrentDiscountCode($conn,$c_no);
+		
 		#update customer's discount code
-		$update_DC_query = 'UPDATE CUSTOMER SET discount_code= '.$discount_code.' WHERE c_id = '.intval($c_no).'';
+		$update_DC_query = 'UPDATE CUSTOMER SET discount_code= '.$d_code.' WHERE c_id = '.intval($c_no).'';
 		$update_DC_result = mysqli_query($conn, $update_DC_query);
 		if(!$update_DC_result) {
 			print("Error: ".mysqli_error($conn));
@@ -128,7 +140,7 @@
 									</button>
 								</div>';
 		}
-			
+
 	}
 		
 		

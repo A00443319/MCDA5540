@@ -32,43 +32,61 @@
     $pubYear = htmlentities($_POST["pubYear"]);
     $title = htmlentities($_POST["title"]);
     $pages = htmlentities($_POST["pages"]);
+    $authors = $_POST["authors"];
       
-   // print '<br>MagId</br>';
-   // print $mId;
-   // print '<br>vId:</br>';
-   // print $vId;
-   // print '<br>pubYear</br>';
-   // print $pubYear;
-   // print '<br>Title</br>';
-   // print $title;
-   // print '<br>pages</br>';
-   // print $pages;
-   // print '<br></br>';
-
-
-			$volume_exist_query = "SELECT * FROM VOLUME where v_id = '$vId' ";
-      $volumeDoesExist = mysqli_query($conn, $volume_exist_query);
-      
-			//$magazine_exist_query = "SELECT * FROM MAGAZINE where _id = '$mId' ";
-      //$magazineDoesExist = mysqli_query($conn, $magazine_exist_query);
-      
-		//	if (!$doesExist) print("ERROR: Volume doesn't exist".mysqli_error($conn));
-		//	else print("Great!! : Volume does exist".mysqli_error($conn));
-
-      
-      if (mysqli_num_rows($volumeDoesExist) != 0){
-			//	echo 'Exists';
-        
-        
-			} else {
-       // echo 'Doesn"t Exists : Adding a volume !! ';
-        insertVolume($mId,$vId,$pubYear, $conn);
-      }
-      
-      insertArticle($mId,$vId,$title,$pages, $conn);
-      
+   $volume_exist_query = "SELECT * FROM VOLUME where v_id = '$vId' and m_id = '$mId' ";
+   $volumeDoesExist = mysqli_query($conn, $volume_exist_query);
+   
+   
+   if (mysqli_num_rows($volumeDoesExist) != 0){
+     //	echo 'Exists';
+    // Do nothing.     
+    } else {
+      // echo 'Doesn"t Exists : Adding a volume !! ';
+      insertVolume($mId,$vId,$pubYear, $conn);
     }
 
+    
+    $articleId = insertArticle($mId,$vId,$title,$pages, $conn);
+
+    if($articleId != -1)
+    {
+      foreach($authors as $author) {
+        
+       //push authorId with article id in WRITTENBY
+       if(insertWrittenBy($articleId,$author, $conn) == -1)
+       {
+          return;
+       }
+       
+      }
+      
+      echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">
+            WrittenBy Table updated successfully!
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>';
+    }
+    
+  }
+  
+  
+  
+  function insertWrittenBy($articleId,$author, $conn) 
+  {
+      $insert_writtenby_query = "INSERT into WRITTENBY (article_id,author_id) VALUES ('$articleId','$author')";
+      
+      $result = mysqli_query($conn,$insert_writtenby_query);
+      if (!$result) 
+      {
+        print("Error: ".mysqli_error($conn));
+        return -1;
+      }
+      else{ 
+        return 1;
+    }
+  }
     
 
     function insertVolume($mId,$vId,$pubYear, $conn) 
@@ -92,7 +110,14 @@
       $insert_volume_query = "INSERT into ARTICLE (title, pages, v_id, m_id) VALUES ('$title','$pages','$vId','$mId')";
       
       $result = mysqli_query($conn,$insert_volume_query);
-      if (!$result) print("Error: ".mysqli_error($conn));
+      $articleId = mysqli_insert_id($conn);
+
+
+      if (!$result) 
+      {
+        print("Error: ".mysqli_error($conn));
+        return -1;
+      }
       else{ 
           echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">
                 New Article "'.$title.'" added!
@@ -100,9 +125,11 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>';
+              return $articleId;
       }
     }	
-
+    
+/////////GET MAGAZINEs First DropDown
 
 		$show_mag_query = "select * from MAGAZINE";
 		
@@ -124,6 +151,34 @@
 			print '<small style="margin-top: 15px;"><a href="addNewMagazine.php">Add a new Magazine</a></small>';
 			print '</div>';
 		}
+
+
+/////////GET AUTHORs First DropDown
+
+
+		$show_author_query = "select * from AUTHOR";
+		
+		$select_author_result = mysqli_query($conn,$show_author_query);
+		
+		if (!$select_author_result) {
+			print("ERROR: ".mysqli_error($conn));
+		}
+		else {
+			print '<div class="form-group col-md-10" style="display: grid;">';
+			print '<label for="Magazine">Select Authors</label>';
+      print "<select name='authors[]' id='AuthorId' multiple='multiple' class='form-control' style='width:80%'>";
+			while ($row = mysqli_fetch_row($select_author_result)) {
+				print "<option value=\"$row[0]\">$row[1] $row[2]</option>";
+			}
+			print "</select>";
+			print '</div>';
+		}
+
+
+
+
+
+
       CloseCon($conn);
         
     ?>
@@ -136,7 +191,7 @@
     
     <div class="form-group col-md-4">
       <label for="pubYearLabel">Select Publication Year : </label>
-      <select name="pubYear">
+      <select name="pubYear" class='form-control' style='width:50%'>
         <option>Select Year</option>
         <?php foreach($years as $year) : ?>
           <option value="<?php echo $year; ?>"><?php echo $year; ?></option>
@@ -171,7 +226,11 @@
 
 <script>
   $(function () {
-  $("#magNameId").select2();
+  $("#mId").select2();
+});
+
+  $(function () {
+  $("#AuthorId").select2();
 });
 
 </script>

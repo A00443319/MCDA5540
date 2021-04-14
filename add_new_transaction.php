@@ -25,14 +25,6 @@
 	
 	if (!$conn) die("Couldn't connect to MySQL");
 
-	/*mysqli_select_db($conn, $db)
-		or die("Couldn't open $db: ".mysqli_error($conn));*/
-		
-		/*insert in  txn (txn_num,cid, now, purchase price=0) - txn_num
-insert in txn_items(txn_num, itemid, qty) 
-update txn set column purchase price
-update discount code in Customer table*/
-
 	$cust_list = mysqli_query($conn, "select c_id, fname from CUSTOMER");
 
 	if (!$cust_list) print("ERROR: ".mysqli_error($conn));
@@ -49,7 +41,7 @@ update discount code in Customer table*/
 	}
 		
 	  
-	
+	#list of customer
 	function getCustomers($cust_list){
 		print '<div class="form-group col-md-6">';
 		print '<label for="fname">Customer</label>';
@@ -62,6 +54,7 @@ update discount code in Customer table*/
 		print "</div>";
 	}
 
+	#list of items
 	function getItems($items_list){
 		print '<div class="form-group col-md-4">';
 		print '<label for="fname">Items</label></br>';
